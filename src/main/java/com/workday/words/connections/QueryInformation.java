@@ -19,12 +19,6 @@ public class QueryInformation {
     private String url = "https://en.wikipedia.org/w/api.php?action=query&prop=extracts&pageids=";
     private String params = "&explaintext&format=json";
 
-    private BlockingQueue<String> outQueue;
-
-    public QueryInformation(BlockingQueue<String> outQueue) {
-        this.outQueue = outQueue;
-    }
-
     public String getPageStream(String pageId){
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
@@ -50,10 +44,10 @@ public class QueryInformation {
             }
         } catch (IOException e) {
             //TODO better error handling
-            System.out.println("Something wrong here!");
+            System.out.println("Something wrong here11!" + e);
         } catch (InterruptedException e) {
             //TODO better error handling
-            System.out.println("Something wrong here!");
+            System.out.println("Something wrong here22!" + e);
         }
 
         return  null;
@@ -87,11 +81,11 @@ public class QueryInformation {
 
             while(true){
 
-
-                    String current = jp.nextTextValue();
+                    //TODO test with text size GB
+                    String current =  jp.nextTextValue();
 
                     if("extract".equals(jp.currentName())){
-                        //System.out.println("*******************COntent:" + current);
+
                         return current;
                     }
 
