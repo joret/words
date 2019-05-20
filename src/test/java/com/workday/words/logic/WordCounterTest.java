@@ -11,7 +11,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 
 public class WordCounterTest {
-    ICounter counter;
+    private ICounter counter;
 
     @Before
     public void setUp() throws Exception {

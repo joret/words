@@ -11,7 +11,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 public class WordCleanerTest {
-    ICleaner wordCleaner;
+    private ICleaner wordCleaner;
 
     @Before
     public void setUp() throws Exception {

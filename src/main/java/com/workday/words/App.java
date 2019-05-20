@@ -16,7 +16,6 @@ import com.workday.words.interfaces.IQueryInformation;
 import com.workday.words.logic.TopWordsFinder;
 import com.workday.words.logic.WordCleaner;
 import com.workday.words.logic.WordCounter;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -27,9 +26,10 @@ import java.util.Map;
  */
 public class App extends AbstractModule
 {
-    ICounter counter;
-    ICleaner cleaner;
-    IFinder topFinder;
+    //Instantiating logic objects with new, but they can be injected if needed later with new implementations
+    ICounter counter = new WordCounter();
+    ICleaner cleaner = new WordCleaner();
+    IFinder topFinder = new TopWordsFinder();
     IQueryInformation queryInformation;
 
     public static void main( String[] args ) {
@@ -60,7 +60,6 @@ public class App extends AbstractModule
 
     public Map<Long, List<String>> run (String[] args ) throws CleanException, QueryException, CounterException, FindException {
         //TODO perform the operations using lambda too
-        //TODO CONFIG LOADING? logging framework?
         //TODO rebuild QueryInformation to consume partial parts of string
 
         String content = this.queryInformation.getPageStream(args[0]);
@@ -75,19 +74,15 @@ public class App extends AbstractModule
     @Override
     /***
      * Configure dependency injection
+     * Injecting only the connection class to retrieve the wiki page text. Can inject more later, but for now is the
+     * only object to inject when testing
      */
     protected void configure(){
-        bind(ICounter.class).to(WordCounter.class);
-        bind(IFinder.class).to(TopWordsFinder.class);
-        bind(ICleaner.class).to(WordCleaner.class);
         bind(IQueryInformation.class).to(QueryInformation.class);
     }
 
     @Inject
-    public void App(ICounter counter, ICleaner cleaner, IFinder finder, IQueryInformation queryInformation){
-        this.counter = counter;
-        this.cleaner = cleaner;
-        this.topFinder = finder;
+    public void App(IQueryInformation queryInformation){
         this.queryInformation = queryInformation;
     }
 }

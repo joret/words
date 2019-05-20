@@ -19,11 +19,11 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 /**
- * Unit test for simple App.
+ * Test for simple App.
  */
 public class AppTest 
 {
-    Injector injector;
+    private Injector injector;
 
     @Before
     public void setUp() throws Exception {
@@ -31,9 +31,6 @@ public class AppTest
 
             @Override
             protected void configure(){
-                bind(ICounter.class).to(WordCounter.class);
-                bind(IFinder.class).to(TopWordsFinder.class);
-                bind(ICleaner.class).to(WordCleaner.class);
                 bind(IQueryInformation.class).to(MockQuery.class);
             }
         });
@@ -45,11 +42,12 @@ public class AppTest
     @Test
     public void AppTest() throws Exception
     {
+        //TODO validate this test
         var expected = Map.of(3l, Arrays.asList("davenport", "arabian"));
         var app = injector.getInstance(App.class);
         //First parameter does not matter, as the page will be injected by the mock
         var topHits = app.run(new String[]{"WillBeInjected","1"});
-        topHits.forEach((k,v) -> System.out.println("k:" + k + " v:" + v));
+
         assertThat(topHits, is(expected));
     }
 }
