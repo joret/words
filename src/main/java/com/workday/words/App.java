@@ -1,49 +1,96 @@
 package com.workday.words;
 
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Inject;
+import com.google.inject.Injector;
 import com.workday.words.connections.QueryInformation;
+import com.workday.words.exceptions.CleanException;
+import com.workday.words.exceptions.CounterException;
+import com.workday.words.exceptions.FindException;
+import com.workday.words.exceptions.QueryException;
+import com.workday.words.interfaces.ICleaner;
+import com.workday.words.interfaces.ICounter;
+import com.workday.words.interfaces.IFinder;
+import com.workday.words.interfaces.IQueryInformation;
 import com.workday.words.logic.TopWordsFinder;
 import com.workday.words.logic.WordCleaner;
 import com.workday.words.logic.WordCounter;
 
 import java.util.Arrays;
-
-//TODO look for a better way to import this
-import static java.util.stream.Collectors.groupingBy;
+import java.util.List;
+import java.util.Map;
 
 /**
- * Hello world!
+ *
  *
  */
-public class App 
+public class App extends AbstractModule
 {
-    public static void main( String[] args )
-    {
+    ICounter counter;
+    ICleaner cleaner;
+    IFinder topFinder;
+    IQueryInformation queryInformation;
 
-        //TODO DEPENDENCY INJECTION FRAMEWORK? CONFIG LOADING? logging framework?
+    public static void main( String[] args ) {
+
         try {
-            //String testLoad = " to the Meadowlands Sports Complex in 1984. The Jets advanced to the playoffs for the first time in 1968 and went on to compete in Super Bowl III where they defeated the Baltimore Colts, becoming the first AFL team to defeat an NFL club in an AFL\\u2013NFL World Championship Game. Since 1968, the Jets have appeared in the playoffs 13 times, and in the AFC Championship Game four times, most recently losing to the Pittsburgh Steelers in 2010. However, the Jets have never returned to the Super Bowl, making them one of three NFL teams to win their lone Super Bowl appearance, along with the New Orleans Saints and Tampa Bay Buccaneers. Apart from the Cleveland Browns and Detroit Lions, who have never reached the Super Bowl (although both won NFL championships prior to 1966), the Jets' drought is the longest among current NFL franchises.\\n</p><p>The team's training facility, Atlantic Health Jets Training Center, which opened in 2008, is located in Florham Park. The team";
-            String testLoad = "tio tio abuelo tio hijo tio abuelo";
-            String testLoad2 = "tio tio hijo perro";
-            var counter = new WordCounter();
-            var cleaner = new WordCleaner();
-            var topFinder = new TopWordsFinder();
+            if (args.length < 2) {
+                System.out.println("Requires 2 parameters: 1) PageId 2) Number of hits required");
+                return;
+            }
 
-            //TODO rebuild QueryInformation to consume partial parts of string
-            var queryInputStream = new QueryInformation();
-            String content = queryInputStream.getPageStream("21721040");
+            //Dependency injector
+            Injector injector = Guice.createInjector(new App());
+            var app = injector.getInstance(App.class);
 
+            //Core logic
+            var topHits = app.run(args);
 
-            //TODO split text while doing request as bytes stream
-            var cleanData = cleaner.cleanAndFilter(Arrays.asList(content.split(" ")));
-            var hitsAndData = counter.process(cleanData);
-            var topHitsData = topFinder.findHits(hitsAndData, 4);
-
-            System.out.println("Top hits");
-            topHitsData.entrySet().forEach(e -> System.out.println("k:" + e.getKey() + " v:" + e.getValue()));
-
-        } catch(Exception e){
-            //TODO treat exception better when no internet connection
-            System.out.println("Error trying to process:" +  e);
+            if (topHits != null) {
+                System.out.println("Top hits");
+                topHits.forEach((k, v) -> System.out.println("k:" + k + " v:" + v));
+            }
+        } catch (Exception e) {
+            System.out.println("System failure:" + e.getMessage());
+            e.printStackTrace();
         }
+
+    }
+
+    public Map<Long, List<String>> run (String[] args ) throws CleanException, QueryException, CounterException, FindException {
+        //TODO perform the operations using lambda too
+        //TODO CONFIG LOADING? logging framework?
+        //TODO rebuild QueryInformation to consume partial parts of string
+
+        String content = this.queryInformation.getPageStream(args[0]);
+
+        var cleanData = this.cleaner.cleanAndFilter(Arrays.asList(content.split(" ")));
+        var hitsAndData = this.counter.count(cleanData);
+        var topHitsData = this.topFinder.findHits(hitsAndData, Integer.valueOf(args[1]));
+
+        return topHitsData;
+    }
+
+    @Override
+    /***
+     * Configure dependency injection
+     */
+    protected void configure(){
+        bind(ICounter.class).to(WordCounter.class);
+        bind(IFinder.class).to(TopWordsFinder.class);
+        bind(ICleaner.class).to(WordCleaner.class);
+        bind(IQueryInformation.class).to(QueryInformation.class);
+    }
+
+    @Inject
+    public void App(ICounter counter, ICleaner cleaner, IFinder finder, IQueryInformation queryInformation){
+        this.counter = counter;
+        this.cleaner = cleaner;
+        this.topFinder = finder;
+        this.queryInformation = queryInformation;
     }
 }
+
+
+
