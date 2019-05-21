@@ -18,6 +18,7 @@ public class WordCleanerTest {
         wordCleaner = new WordCleaner();
     }
 
+    //TODO fix tests
     @Test
     public void cleanWordsLessThan4Chars() throws Exception{
         var words = Arrays.asList("aaa.", "b ", " c");
@@ -40,6 +41,15 @@ public class WordCleanerTest {
     public void normalizeToLowerCase() throws Exception{
         var expected = Arrays.asList("aaaa", "bbbb", "aaaa");
         var words = Arrays.asList("aaaa.", "bbbb ", " AaAa");
+        var cleaned = wordCleaner.cleanAndFilter(words);
+
+        assertThat(cleaned, is(expected));
+    }
+
+    @Test
+    public void RandomTest() throws Exception{
+        var expected = Arrays.asList("and", "is");
+        var words = Arrays.asList("harshly.\\nStack");
         var cleaned = wordCleaner.cleanAndFilter(words);
 
         assertThat(cleaned, is(expected));

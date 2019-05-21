@@ -5,17 +5,14 @@ import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.workday.words.connections.QueryInformation;
-import com.workday.words.exceptions.CleanException;
-import com.workday.words.exceptions.CounterException;
-import com.workday.words.exceptions.FindException;
-import com.workday.words.exceptions.QueryException;
-import com.workday.words.interfaces.ICleaner;
-import com.workday.words.interfaces.ICounter;
-import com.workday.words.interfaces.IFinder;
-import com.workday.words.interfaces.IQueryInformation;
+import com.workday.words.exceptions.*;
+import com.workday.words.interfaces.*;
 import com.workday.words.logic.TopWordsFinder;
 import com.workday.words.logic.WordCleaner;
 import com.workday.words.logic.WordCounter;
+import com.workday.words.logic.WordSplitter;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +29,8 @@ public class App extends AbstractModule
     ICounter counter = new WordCounter();
     ICleaner cleaner = new WordCleaner();
     IFinder topFinder = new TopWordsFinder();
+
+    //Injecting this object
     IQueryInformation queryInformation;
 
     public static void main( String[] args ) {
@@ -64,17 +63,28 @@ public class App extends AbstractModule
 
     }
 
-    public Map<Long, List<String>> run (String[] args ) throws CleanException, QueryException, CounterException, FindException {
+    public Map<Long, List<String>> run (String[] args ) throws CleanException, QueryException,
+            CounterException, FindException, SplitException {
         //TODO perform the operations using lambda too
         //TODO rebuild QueryInformation to consume partial parts of string
         //TODO put cancellation token to shutdown gracefully
         //TODO see if the arrayblocking is the best and tune capacity properly
+        //TODO Need to print title too
         BlockingQueue<String> wordsQueue = new ArrayBlockingQueue<>(100000);
         this.queryInformation.getPageStream(args[0], wordsQueue);
 
         if(wordsQueue != null && wordsQueue.size() > 0) {
-            var cleanData = this.cleaner.cleanAndFilter(wordsQueue);
-            for(var cleanWord : cleanData){
+
+            var words = new ArrayList<String>();
+
+            //TODO use javaRX observable collection
+            for(var word : wordsQueue) {
+                words.add(word);
+            }
+            var cleanData = this.cleaner.cleanAndFilter(words);
+
+            //TODO REMOVE log
+            for (var cleanWord : cleanData) {
                 System.out.println("CLEAN: " + cleanWord);
             }
             var hitsAndData = this.counter.count(cleanData);
@@ -94,6 +104,7 @@ public class App extends AbstractModule
      */
     protected void configure(){
         bind(IQueryInformation.class).to(QueryInformation.class);
+        bind(ISplitter.class).to(WordSplitter.class);
     }
 
     @Inject

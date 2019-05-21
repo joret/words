@@ -3,8 +3,12 @@ package com.workday.words.connections;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+import com.google.inject.Inject;
 import com.workday.words.exceptions.QueryException;
+import com.workday.words.exceptions.SplitException;
 import com.workday.words.interfaces.IQueryInformation;
+import com.workday.words.interfaces.ISplitter;
+import com.workday.words.logic.WordSplitter;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -25,7 +29,10 @@ public class QueryInformation implements IQueryInformation {
     private String url = "https://en.wikipedia.org/w/api.php?action=query&prop=extracts&pageids=";
     private String params = "&explaintext&format=json";
 
-    public void getPageStream(String pageId, BlockingQueue<String> outQueue) throws QueryException{
+    //TODO inject
+    private ISplitter splitter = new WordSplitter();
+
+    public void getPageStream(String pageId, BlockingQueue<String> outQueue) throws QueryException, SplitException {
 
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
@@ -39,14 +46,17 @@ public class QueryInformation implements IQueryInformation {
             var response = client.send(request,
                     HttpResponse.BodyHandlers.ofInputStream());
             if (response.statusCode() >= 200 && response.statusCode() < 300) {
-
-                try( var scanner = new Scanner(response.body())){
+                this.splitter.split(response.body(), outQueue, pageId);
+                /*try( var scanner = new Scanner(response.body())){
                     //Skipping twice just to be sure we are on the right label
                     scanner.skip(Pattern.compile(".*" + pageId));
                     scanner.skip(".*extract");
 
-                    String matchRegex = "\\w*[\\.|:|\\n|-]\\w*";
+
+                    //TODO scan TITLE
                     String breakRegex = "\\.|:|\\n|-";
+                    String matchRegex = "\\w*["+ breakRegex + "]\\w*";
+
                     while(scanner.hasNext()) {
 
                         String word = scanner.next();
@@ -64,7 +74,7 @@ public class QueryInformation implements IQueryInformation {
 
                 } catch (Exception e){
                     throw new QueryException("Error traversing stream", e);
-                }
+                }*/
 
             } else {
                 throw new QueryException("Bad request:" + response.statusCode());
