@@ -45,7 +45,7 @@ public class AppTest
         //TODO validate this test
         var expected = Map.of(3l, Arrays.asList("davenport", "arabian"));
         var app = injector.getInstance(App.class);
-        //First parameter does not matter, as the page will be injected by the mock
+        //First parameter does not matter, as the text will be injected by the mock
         var topHits = app.run(new String[]{"WillBeInjected","1"});
 
         assertThat(topHits, is(expected));

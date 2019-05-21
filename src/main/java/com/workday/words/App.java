@@ -51,7 +51,11 @@ public class App extends AbstractModule
                 System.out.println("Top hits");
                 topHits.forEach((k, v) -> System.out.println("k:" + k + " v:" + v));
             }
+
+            //TODO validate if we need extra cleaning on the words
         } catch (Exception e) {
+            //Here we will now exactly where the system had an issue, as each processing unit has it's
+            //own exception type in the exception package
             System.out.println("System failure:" + e.getMessage());
             e.printStackTrace();
         }
@@ -61,21 +65,25 @@ public class App extends AbstractModule
     public Map<Long, List<String>> run (String[] args ) throws CleanException, QueryException, CounterException, FindException {
         //TODO perform the operations using lambda too
         //TODO rebuild QueryInformation to consume partial parts of string
-
+        //TODO put cancellation token to shutdown gracefully
         String content = this.queryInformation.getPageStream(args[0]);
 
-        var cleanData = this.cleaner.cleanAndFilter(Arrays.asList(content.split(" ")));
-        var hitsAndData = this.counter.count(cleanData);
-        var topHitsData = this.topFinder.findHits(hitsAndData, Integer.valueOf(args[1]));
+        if(content != null) {
+            var cleanData = this.cleaner.cleanAndFilter(Arrays.asList(content.split(" ")));
+            var hitsAndData = this.counter.count(cleanData);
+            var topHitsData = this.topFinder.findHits(hitsAndData, Integer.valueOf(args[1]));
 
-        return topHitsData;
+            return topHitsData;
+        }
+
+        return null;
     }
 
     @Override
     /***
      * Configure dependency injection
-     * Injecting only the connection class to retrieve the wiki page text. Can inject more later, but for now is the
-     * only object to inject when testing
+     * Injecting only the connection class to retrieve the wiki page text. Can inject more later, but for now the query
+     * to wikipedia external resource is the only object to inject when testing
      */
     protected void configure(){
         bind(IQueryInformation.class).to(QueryInformation.class);

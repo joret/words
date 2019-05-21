@@ -6,11 +6,15 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.workday.words.exceptions.QueryException;
 import com.workday.words.interfaces.IQueryInformation;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Scanner;
 
 public class QueryInformation implements IQueryInformation {
 
@@ -19,6 +23,7 @@ public class QueryInformation implements IQueryInformation {
     private String params = "&explaintext&format=json";
 
     public String getPageStream(String pageId) throws QueryException{
+
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url + pageId + params))
@@ -32,61 +37,65 @@ public class QueryInformation implements IQueryInformation {
                     HttpResponse.BodyHandlers.ofInputStream());
             if (response.statusCode() >= 200 && response.statusCode() < 300) {
 
+                JsonFactory jFactory = new JsonFactory();
 
-                JsonFactory factory = new JsonFactory();
-                JsonParser parser = factory.createParser(response.body());
-                return readWikipedia(parser, pageId);
+                try(JsonParser jParser = jFactory.createParser(response.body())){
+                    if(jParser.nextToken() == JsonToken.START_OBJECT){
+                        var token = jParser.nextToken();
+
+                        String toFind = pageId;
+
+                        //TODO put loop protection
+                        lookForTag(toFind, token, jParser);
+                        lookForTag("extract", token, jParser);
+                        //String val = jParser.nextTextValue();
+                        var inputStream = (InputStream)jParser.getInputSource();
+
+
+
+                        /*try (var reader = new BufferedReader(new InputStreamReader(inputStream))){
+                            var line = reader.re();
+                            System.out.println("Line:" + line);
+                        }*/
+                        try(var scanner = new Scanner(inputStream)){
+                            scanner.useDelimiter(" ");
+                            String result = scanner.next();
+                            while( result != null){
+                                System.out.println("words:" + result);
+                                result = scanner.next();
+                            }
+
+                        }
+
+                    }
+                } catch (Exception e){
+                    throw new QueryException("Parsing json exception.", e);
+                }
+
             } else {
                 throw new QueryException("Bad request:" + response.statusCode());
             }
         } catch (IOException e) {
-            new QueryException("IO error", e);
+
+            throw new QueryException("IO error performing request", e);
         } catch (InterruptedException e) {
-            new QueryException("Interrupted reading stream", e);
+            throw new QueryException("Interrupted request", e);
         }
 
-        return  null;
-    }
-
-    private String readWikipedia(JsonParser jp, String pageId){
-        try {
-
-
-            //TODO put condition to end loop
-            while (true) {
-
-                if(jp.nextToken() == JsonToken.START_OBJECT){
-                    jp.nextToken();
-                    String fieldName = jp.getCurrentName();
-
-
-                        if (fieldName != null && fieldName.equals(pageId)){
-                            break;
-                        }
-
-                }
-            }
-
-            while(true){
-
-                    //TODO test with text size GB
-                    String current =  jp.nextTextValue();
-
-                    if("extract".equals(jp.currentName())){
-
-                        return current;
-                    }
-
-
-                    if( jp.nextToken() == JsonToken.END_OBJECT){
-                        break;
-                    }
-            }
-            jp.close(); // important to close both parser and underlying File reader
-
-        }catch (Exception e){
-            System.out.println("Exception:" + e.getMessage());
-        }
         return null;
     }
+
+
+    private void lookForTag(String tag, JsonToken token, JsonParser jParser) throws IOException{
+        while(token != null){
+            String currentName = jParser.getCurrentName();
+            if(token == JsonToken.FIELD_NAME && currentName.equals(tag)){
+
+                return;
+
+            }
+            token = jParser.nextToken();
+        }
+    }
+
 }
