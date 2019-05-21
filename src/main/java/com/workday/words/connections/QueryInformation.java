@@ -14,7 +14,10 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
+import java.util.concurrent.BlockingQueue;
+import java.util.regex.Pattern;
 
 public class QueryInformation implements IQueryInformation {
 
@@ -22,7 +25,7 @@ public class QueryInformation implements IQueryInformation {
     private String url = "https://en.wikipedia.org/w/api.php?action=query&prop=extracts&pageids=";
     private String params = "&explaintext&format=json";
 
-    public String getPageStream(String pageId) throws QueryException{
+    public void getPageStream(String pageId, BlockingQueue<String> outQueue) throws QueryException{
 
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
@@ -32,44 +35,35 @@ public class QueryInformation implements IQueryInformation {
                 .build();
 
         try {
-            //TODO make async
+            //TODO make async if needed
             var response = client.send(request,
                     HttpResponse.BodyHandlers.ofInputStream());
             if (response.statusCode() >= 200 && response.statusCode() < 300) {
 
-                JsonFactory jFactory = new JsonFactory();
+                try( var scanner = new Scanner(response.body())){
+                    //Skipping twice just to be sure we are on the right label
+                    scanner.skip(Pattern.compile(".*" + pageId));
+                    scanner.skip(".*extract");
 
-                try(JsonParser jParser = jFactory.createParser(response.body())){
-                    if(jParser.nextToken() == JsonToken.START_OBJECT){
-                        var token = jParser.nextToken();
+                    String matchRegex = "\\w*[\\.|:|\\n|-]\\w*";
+                    String breakRegex = "\\.|:|\\n|-";
+                    while(scanner.hasNext()) {
 
-                        String toFind = pageId;
+                        String word = scanner.next();
 
-                        //TODO put loop protection
-                        lookForTag(toFind, token, jParser);
-                        lookForTag("extract", token, jParser);
-                        //String val = jParser.nextTextValue();
-                        var inputStream = (InputStream)jParser.getInputSource();
-
-
-
-                        /*try (var reader = new BufferedReader(new InputStreamReader(inputStream))){
-                            var line = reader.re();
-                            System.out.println("Line:" + line);
-                        }*/
-                        try(var scanner = new Scanner(inputStream)){
-                            scanner.useDelimiter(" ");
-                            String result = scanner.next();
-                            while( result != null){
-                                System.out.println("words:" + result);
-                                result = scanner.next();
+                        if(word.matches(matchRegex)) {
+                            var words = word.split(breakRegex);
+                            for(var token : words){
+                                outQueue.add(token);
                             }
-
+                        } else {
+                            outQueue.add(word);
                         }
-
+                        System.out.println("WWord:" + word);
                     }
+
                 } catch (Exception e){
-                    throw new QueryException("Parsing json exception.", e);
+                    throw new QueryException("Error traversing stream", e);
                 }
 
             } else {
@@ -80,21 +74,6 @@ public class QueryInformation implements IQueryInformation {
             throw new QueryException("IO error performing request", e);
         } catch (InterruptedException e) {
             throw new QueryException("Interrupted request", e);
-        }
-
-        return null;
-    }
-
-
-    private void lookForTag(String tag, JsonToken token, JsonParser jParser) throws IOException{
-        while(token != null){
-            String currentName = jParser.getCurrentName();
-            if(token == JsonToken.FIELD_NAME && currentName.equals(tag)){
-
-                return;
-
-            }
-            token = jParser.nextToken();
         }
     }
 

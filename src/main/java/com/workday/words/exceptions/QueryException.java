@@ -5,7 +5,7 @@ public class QueryException extends Exception {
         super(s);
     }
 
-    public QueryException(String io_error, Exception e) {
-        super(io_error, e);
+    public QueryException(String error, Exception e) {
+        super(error, e);
     }
 }

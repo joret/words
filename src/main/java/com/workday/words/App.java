@@ -19,6 +19,8 @@ import com.workday.words.logic.WordCounter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 /**
  *
@@ -66,10 +68,15 @@ public class App extends AbstractModule
         //TODO perform the operations using lambda too
         //TODO rebuild QueryInformation to consume partial parts of string
         //TODO put cancellation token to shutdown gracefully
-        String content = this.queryInformation.getPageStream(args[0]);
+        //TODO see if the arrayblocking is the best and tune capacity properly
+        BlockingQueue<String> wordsQueue = new ArrayBlockingQueue<>(100000);
+        this.queryInformation.getPageStream(args[0], wordsQueue);
 
-        if(content != null) {
-            var cleanData = this.cleaner.cleanAndFilter(Arrays.asList(content.split(" ")));
+        if(wordsQueue != null && wordsQueue.size() > 0) {
+            var cleanData = this.cleaner.cleanAndFilter(wordsQueue);
+            for(var cleanWord : cleanData){
+                System.out.println("CLEAN: " + cleanWord);
+            }
             var hitsAndData = this.counter.count(cleanData);
             var topHitsData = this.topFinder.findHits(hitsAndData, Integer.valueOf(args[1]));
 

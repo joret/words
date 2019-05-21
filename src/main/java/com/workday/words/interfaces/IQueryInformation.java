@@ -2,6 +2,8 @@ package com.workday.words.interfaces;
 
 import com.workday.words.exceptions.QueryException;
 
+import java.util.concurrent.BlockingQueue;
+
 public interface IQueryInformation {
-    String getPageStream(String pageId) throws QueryException;
+    void getPageStream(String pageId, BlockingQueue<String> outQueue) throws QueryException;
 }
