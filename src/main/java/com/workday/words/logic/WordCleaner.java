@@ -12,12 +12,8 @@ public class WordCleaner implements ICleaner {
         try {
             //Filtering bad data, like empty strings, empty spaces on words and grouping by word to use counting collector
             //Normalizing to lowercase
-            //String charsToDiscard = "\\.=,:";
             String charsToDiscard = "[^a-zA-Z]";
-            //"[^a-zA-Z]", ""
-        /*TODO clean better, decode url strings, remove any special char at end and beginning . Words valid only with alphabet chars*/
             var cleanWords = words.parallelStream()
-                    //.map(w -> w.trim().replaceAll("[" + charsToDiscard + "]*$|^[" + charsToDiscard + "]", "").toLowerCase())
                     .map(w -> w.trim().replaceAll(charsToDiscard, "").toLowerCase())
                     .filter(w -> w.length() >= 4).collect(Collectors.toList());
             return cleanWords;

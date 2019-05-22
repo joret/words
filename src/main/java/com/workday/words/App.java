@@ -13,7 +13,6 @@ import com.workday.words.logic.WordCounter;
 import com.workday.words.logic.WordSplitter;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -30,7 +29,7 @@ public class App extends AbstractModule
     ICleaner cleaner = new WordCleaner();
     IFinder topFinder = new TopWordsFinder();
 
-    //Injecting this object
+    //Injecting object that connect to external resource
     IQueryInformation queryInformation;
 
     public static void main( String[] args ) {
@@ -53,7 +52,6 @@ public class App extends AbstractModule
                 topHits.forEach((k, v) -> System.out.println("k:" + k + " v:" + v));
             }
 
-            //TODO validate if we need extra cleaning on the words
         } catch (Exception e) {
             //Here we will now exactly where the system had an issue, as each processing unit has it's
             //own exception type in the exception package
@@ -65,11 +63,8 @@ public class App extends AbstractModule
 
     public Map<Long, List<String>> run (String[] args ) throws CleanException, QueryException,
             CounterException, FindException, SplitException {
-        //TODO perform the operations using lambda too
-        //TODO rebuild QueryInformation to consume partial parts of string
         //TODO put cancellation token to shutdown gracefully
         //TODO see if the arrayblocking is the best and tune capacity properly
-        //TODO Need to print title too
         BlockingQueue<String> wordsQueue = new ArrayBlockingQueue<>(100000);
         this.queryInformation.getPageStream(args[0], wordsQueue);
 
@@ -112,6 +107,3 @@ public class App extends AbstractModule
         this.queryInformation = queryInformation;
     }
 }
-
-
-

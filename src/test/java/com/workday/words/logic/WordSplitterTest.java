@@ -24,14 +24,17 @@ public class WordSplitterTest {
     @Test
     public void splitTest() throws Exception{
 
-        String string = "{\"query\":{\"pages\":{\"1\":{\"pageid\":1,\"ns\":0,\"title\":\"Stack Overflow\",\"extract\":\"harshly.\\nStack\"}}}}";
+        String string = "{\"query\":{\"pages\":{\"1\":{\"pageid\":1,\"ns\":0,\"title\":\"Stack Overflow\",\"extract\":\"h==\\n\\nAskbot\"}}}}";
 
         //use ByteArrayInputStream to get the bytes of the String and convert them to InputStream.
         InputStream inputStream = new ByteArrayInputStream(string.getBytes(Charset.forName("UTF-8")));
         var queue = new ArrayBlockingQueue<String>(1000);
         sut.split(inputStream, queue, "1");
-        System.out.println("Test");
 
+
+        String str = "\"h==\\n\\nAskbot\"}}}}";
+        str = str.replaceAll("\\\\n", "");
+        System.out.println(str);
         //TODO assert
     }
 }
