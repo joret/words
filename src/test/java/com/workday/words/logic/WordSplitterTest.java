@@ -26,7 +26,7 @@ public class WordSplitterTest {
     @Test
     public void splitTest() throws Exception{
         var expected = Arrays.asList("Askbot");
-        String string = "{\"query\":{\"pages\":{\"1\":{\"pageid\":1,\"ns\":0,\"title\":\"Stack Overflow\",\"extract\":\"h==\\n\\nAskbot\"}}}}";
+        String string = "{\"query\":{\"pages\":{\"1\":{\"pageid\":1,\"ns\":0,\"title\":\"Stack Overflow\",\"extract\":\"h==\\n\\nAskbot";
 
         //use ByteArrayInputStream to get the bytes of the String and convert them to InputStream.
         InputStream inputStream = new ByteArrayInputStream(string.getBytes(Charset.forName("UTF-8")));
@@ -35,6 +35,7 @@ public class WordSplitterTest {
 
         //TODO make assert better
         var actual = queue.take();
+        actual = queue.take();
         actual = queue.take();
         actual = queue.take();
         assertThat(actual, is("Askbot"));
