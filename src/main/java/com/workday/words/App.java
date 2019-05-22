@@ -79,9 +79,9 @@ public class App extends AbstractModule
             var cleanData = this.cleaner.cleanAndFilter(words);
 
             //TODO REMOVE log
-            for (var cleanWord : cleanData) {
+            /*for (var cleanWord : cleanData) {
                 System.out.println("CLEAN: " + cleanWord);
-            }
+            }*/
             var hitsAndData = this.counter.count(cleanData);
             var topHitsData = this.topFinder.findHits(hitsAndData, Integer.valueOf(args[1]));
 
