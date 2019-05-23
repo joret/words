@@ -49,7 +49,7 @@ public class App extends AbstractModule
             var topHits = app.run(args);
 
             if (topHits != null) {
-                System.out.println("Top " + args[0] + " hits");
+                System.out.println("Top " + args[1] + " hits");
                 topHits.entrySet().stream().sorted(Map.Entry.comparingByKey(Comparator.reverseOrder())).forEach(e -> System.out.println(e.getKey() + " " + e.getValue()));
             }
 
