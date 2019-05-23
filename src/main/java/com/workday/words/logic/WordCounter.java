@@ -11,10 +11,6 @@ import java.util.stream.Collectors;
 import static java.util.stream.Collectors.groupingBy;
 
 public class WordCounter implements ICounter {
-
-
-    //TODO test what difference makes parallelStream vs stream using sysinfo
-
     /***
      * Creating a frequency map for the occurrences of the words. The key is the word, the value the number of occurrences
      * @param words
@@ -29,7 +25,6 @@ public class WordCounter implements ICounter {
                             //Creating map to count occurrences of the same word
                             .collect(groupingBy(Function.identity(), Collectors.counting()))
                             .entrySet().parallelStream()
-                            //TODO group as treemap
                             //Creating second map, now the key is the number of hits, and the value the list of words that have that number of hits
                             .collect(groupingBy(Map.Entry::getValue, Collectors.mapping(Map.Entry::getKey, Collectors.toList())));
             return wordMap;

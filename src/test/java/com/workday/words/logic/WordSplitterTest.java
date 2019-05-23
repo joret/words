@@ -7,6 +7,7 @@ import org.junit.Test;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -30,14 +31,15 @@ public class WordSplitterTest {
         String string = "{\"query\":{\"pages\":{\"1\":{\"pageid\":1,\"ns\":0,\"title\":\"Stack Overflow\",\"extract\":\"Hi Askbot\"";
 
         InputStream inputStream = new ByteArrayInputStream(string.getBytes(Charset.forName("UTF-8")));
-        var queue = new ArrayBlockingQueue<String>(1000);
-        sut.split(inputStream, queue, "1");
 
-        queue.take();
-        var actual = queue.take();
-        assertThat(actual, is(expected1));
+        var title = new ArrayList<String> ();
+        var words = sut.split(inputStream,  "1", title);
 
-        actual = queue.take();
-        assertThat(actual, is(expected2));
+
+
+        assertThat(words.get(1), is(expected1));
+
+
+        assertThat(words.get(2), is(expected2));
     }
 }

@@ -1,13 +1,16 @@
 package com.workday.words;
 
 import com.workday.words.exceptions.QueryException;
+import com.workday.words.exceptions.SplitException;
 import com.workday.words.interfaces.IQueryInformation;
-import java.util.concurrent.BlockingQueue;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MockQuery implements IQueryInformation {
-    //TODO fix mock
     @Override
-    public void getPageStream(String pageId, BlockingQueue outQueue) throws QueryException {
+    public List<String> getPageStream(String pageId, List<String> title) throws QueryException, SplitException {
+        var returnWords = new ArrayList<String>();
         var words = ("Homer Davenport (1867–1912) was a political cartoonist and writer from the United States. " +
                 "He is known for drawings that satirized figures of the Gilded Age and Progressive Era, especially " +
                 "Ohio Senator Mark Hanna. Although Davenport had no formal art training, he became one of the highest " +
@@ -18,7 +21,8 @@ public class MockQuery implements IQueryInformation {
                 "The president in turn helped Davenport in 1906 when").split("\\s");
 
         for(var word : words){
-            outQueue.add(word);
+            returnWords.add(word);
         }
+        return  returnWords;
     }
 }

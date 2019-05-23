@@ -13,6 +13,7 @@ import com.workday.words.logic.WordCounter;
 import com.workday.words.logic.WordSplitter;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -48,8 +49,8 @@ public class App extends AbstractModule
             var topHits = app.run(args);
 
             if (topHits != null) {
-                System.out.println("Top hits");
-                topHits.forEach((k, v) -> System.out.println("k:" + k + " v:" + v));
+                System.out.println("Top " + args[0] + " hits");
+                topHits.entrySet().stream().sorted(Map.Entry.comparingByKey(Comparator.reverseOrder())).forEach(e -> System.out.println(e.getKey() + " " + e.getValue()));
             }
 
         } catch (Exception e) {
@@ -63,25 +64,16 @@ public class App extends AbstractModule
 
     public Map<Long, List<String>> run (String[] args ) throws CleanException, QueryException,
             CounterException, FindException, SplitException {
-        //TODO put cancellation token to shutdown gracefully
-        //TODO see if the arrayblocking is the best and tune capacity properly
-        BlockingQueue<String> wordsQueue = new ArrayBlockingQueue<>(100000);
-        this.queryInformation.getPageStream(args[0], wordsQueue);
+
+        List<String> title = new ArrayList<>();
+        var wordsQueue = this.queryInformation.getPageStream(args[0], title);
+
+        if(title != null && title.size() > 0)
+            System.out.println("Title:" + title.get(0));
 
         if(wordsQueue != null && wordsQueue.size() > 0) {
+            var cleanData = this.cleaner.cleanAndFilter(wordsQueue);
 
-            var words = new ArrayList<String>();
-
-            //TODO use javaRX observable collection
-            for(var word : wordsQueue) {
-                words.add(word);
-            }
-            var cleanData = this.cleaner.cleanAndFilter(words);
-
-            //TODO REMOVE log
-            /*for (var cleanWord : cleanData) {
-                System.out.println("CLEAN: " + cleanWord);
-            }*/
             var hitsAndData = this.counter.count(cleanData);
             var topHitsData = this.topFinder.findHits(hitsAndData, Integer.valueOf(args[1]));
 

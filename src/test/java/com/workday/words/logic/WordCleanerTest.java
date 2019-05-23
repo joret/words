@@ -18,7 +18,6 @@ public class WordCleanerTest {
         wordCleaner = new WordCleaner();
     }
 
-    //TODO fix tests
     @Test
     public void cleanWordsLessThan4Chars() throws Exception{
         var words = Arrays.asList("aaa.", "b ", " c");

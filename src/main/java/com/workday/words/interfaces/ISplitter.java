@@ -3,8 +3,8 @@ package com.workday.words.interfaces;
 import com.workday.words.exceptions.SplitException;
 
 import java.io.InputStream;
-import java.util.concurrent.BlockingQueue;
+import java.util.List;
 
 public interface ISplitter {
-    void split(InputStream stream, BlockingQueue<String> outQueue, String pageId) throws SplitException;
+    List<String> split(InputStream stream, String pageId, List<String> returnTitle) throws SplitException;
 }

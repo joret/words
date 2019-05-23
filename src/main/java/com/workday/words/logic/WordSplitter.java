@@ -4,6 +4,8 @@ import com.workday.words.exceptions.SplitException;
 import com.workday.words.interfaces.ISplitter;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.BlockingQueue;
 
@@ -13,8 +15,10 @@ public class WordSplitter implements ISplitter {
      * Searches for the Title and Page Content in the inputstream, allowing to search in big texts without
      * deserializing the json object to a class
      */
-    public void split(InputStream stream, BlockingQueue<String> outQueue, String pageId) throws SplitException{
+    public List<String> split(InputStream stream, String pageId, List<String> returnTitle) throws SplitException{
         try( var scanner = new Scanner(stream, "UTF-8")) {
+            List<String> splitText = new ArrayList<String>();
+
             //Skipping to pageId
             scanner.skip(".*" + pageId);
             scanner.useDelimiter(":|,");
@@ -27,19 +31,21 @@ public class WordSplitter implements ISplitter {
             while (scanner.hasNext()) {
                 String token = scanner.next();
                 if(previousTag.equals(title)) {
-                    System.out.println("title:" + token);
+                    returnTitle.add(token.replaceAll("\"", ""));
+
                     previousTag = "";
+                    scanner.useDelimiter(":");
                 }
 
                 if(previousTag.equals(extract)) {
-                    extractWords(outQueue, breakRegex, token);
+                    splitText.addAll(extractWords(breakRegex, token));
                 }
 
                 if(token != null && token.length() > 0)
                     //If we are in the title token,we break by ':' or ','
                     if(token.matches(title)) {
                         previousTag = title;
-                        scanner.useDelimiter(":|,");
+                        scanner.useDelimiter(",");
                     }
                     //- Else if we are in the Page content (extract tag) we break by whitespace
                     else if (token.matches(extract)) {
@@ -47,21 +53,27 @@ public class WordSplitter implements ISplitter {
                         scanner.useDelimiter("\\p{javaWhitespace}+");
                     }
             }
+            return splitText;
         } catch (Exception e){
             throw new SplitException(e);
         }
+
+
     }
 
-    private void extractWords(BlockingQueue<String> outQueue, String breakRegex, String word) {
+    private List<String> extractWords(String breakRegex, String word) {
+        var wordsReturn = new ArrayList<String>();
         word = word.replaceAll("\\\\n", "-");
         if (word.contains(".") || word.contains("\n") || word.contains(":") || word.contains("-")) {
             var words = word.split(breakRegex);
             for (var token : words) {
 
-                outQueue.add(token);
+                wordsReturn.add(token);
             }
         } else {
-            outQueue.add(word);
+            wordsReturn.add(word);
         }
+
+        return wordsReturn;
     }
 }
