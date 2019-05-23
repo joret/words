@@ -6,6 +6,9 @@ import com.workday.words.interfaces.ICleaner;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/***
+ * Cleans and filters undesired chars, minimum of 4 letters, normalizes to lowercase
+ */
 public class WordCleaner implements ICleaner {
 
     public List<String> cleanAndFilter(List<String> words) throws CleanException{

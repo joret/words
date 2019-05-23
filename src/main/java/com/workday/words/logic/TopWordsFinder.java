@@ -8,6 +8,9 @@ import java.util.Map;
 
 import static java.util.stream.Collectors.toMap;
 
+/***
+ * Sorts the found words/count pairs, and selects the N (topHitsToFind) first ones
+ */
 public class TopWordsFinder implements IFinder {
     public Map<Long, List<String>> findHits(Map<Long, List<String>> wordMap, int topHitsToFind) throws FindException {
         try {

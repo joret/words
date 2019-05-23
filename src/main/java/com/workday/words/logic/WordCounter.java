@@ -12,7 +12,8 @@ import static java.util.stream.Collectors.groupingBy;
 
 public class WordCounter implements ICounter {
     /***
-     * Creating a frequency map for the occurrences of the words. The key is the word, the value the number of occurrences
+     * First creates a frequency map for the occurrences of the words. The key is the word, the value the number of occurrences
+     * Second, creates the inverse map, with the frequency as key, and the list of words that have that frequency as value
      * @param words
      * @return
      * @throws CounterException

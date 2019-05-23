@@ -13,7 +13,7 @@ public class WordSplitter implements ISplitter {
     @Override
     /***
      * Searches for the Title and Page Content in the inputstream, allowing to search in big texts without
-     * deserializing the json object to a class
+     * deserializing the json object to a class and splits the words
      */
     public List<String> split(InputStream stream, String pageId, List<String> returnTitle) throws SplitException{
         try( var scanner = new Scanner(stream, "UTF-8")) {

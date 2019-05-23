@@ -22,7 +22,6 @@ public class WordCleanerTest {
     public void cleanWordsLessThan4Chars() throws Exception{
         var words = Arrays.asList("aaa.", "b ", " c");
         var cleaned = wordCleaner.cleanAndFilter(words);
-
         assertThat(cleaned, is(new ArrayList()));
     }
 
