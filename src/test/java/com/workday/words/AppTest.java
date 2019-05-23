@@ -42,7 +42,7 @@ public class AppTest
     @Test
     public void AppTest() throws Exception
     {
-        //TODO validate this test
+       //TODO validate this test
         var expected = Map.of(3l, Arrays.asList("davenport", "arabian"));
         var app = injector.getInstance(App.class);
         //First parameter does not matter, as the text will be injected by the mock

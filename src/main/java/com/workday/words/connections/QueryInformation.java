@@ -29,6 +29,8 @@ public class QueryInformation implements IQueryInformation {
                 .uri(URI.create(url + pageId + params))
                 .GET()
                 .header("User-Agent", "Java 11")
+                .header("Content-Type", "application/json")
+                .header("charset", "UTF-8")
                 .build();
 
         try {

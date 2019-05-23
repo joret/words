@@ -35,7 +35,7 @@ public class WordSplitter implements ISplitter {
                     extractWords(outQueue, breakRegex, token);
                 }
 
-                if(token != null)
+                if(token != null && token.length() > 0)
                     //If we are in the title token,we break by ':' or ','
                     if(token.matches(title)) {
                         previousTag = title;

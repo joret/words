@@ -45,13 +45,4 @@ public class WordCleanerTest {
 
         assertThat(cleaned, is(expected));
     }
-
-    @Test
-    public void RandomTest() throws Exception{
-        var expected = Arrays.asList("and", "is");
-        var words = Arrays.asList("harshly.\\nStack");
-        var cleaned = wordCleaner.cleanAndFilter(words);
-
-        assertThat(cleaned, is(expected));
-    }
 }
